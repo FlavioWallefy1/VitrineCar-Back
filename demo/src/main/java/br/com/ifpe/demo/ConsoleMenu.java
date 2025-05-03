@@ -4,6 +4,7 @@ import br.com.ifpe.demo.model.Anuncio;
 import br.com.ifpe.demo.model.Usuario;
 import br.com.ifpe.demo.service.AnuncioService;
 import br.com.ifpe.demo.service.UsuarioService;
+import br.com.ifpe.demo.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,9 @@ public class ConsoleMenu {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private AdminService adminService;  // Adicionando o serviço de Admin
 
     private Scanner scanner = new Scanner(System.in);
 
@@ -35,8 +39,13 @@ public class ConsoleMenu {
             System.out.println("6. Listar Usuários");
             System.out.println("7. Atualizar Usuário");
             System.out.println("8. Deletar Usuário");
+            System.out.println("\n=== Menu do Admin ===");  // Menu do Admin
+            System.out.println("9. Listar Todos os Usuários (Admin)");
+            System.out.println("10. Excluir Usuário (Admin)");
+            System.out.println("11. Listar Todos os Anúncios (Admin)");
+            System.out.println("12. Excluir Anúncio (Admin)");
             System.out.println("============");
-            System.out.println("\n9. Sair");
+            System.out.println("\n13. Sair");
             System.out.print("Escolha uma opção: ");
             option = scanner.nextInt();
             scanner.nextLine(); // Limpar o buffer
@@ -67,12 +76,24 @@ public class ConsoleMenu {
                     deleteUsuario();
                     break;
                 case 9:
+                    adminListUsuarios();  // Listar usuários para admin
+                    break;
+                case 10:
+                    adminDeleteUsuario();  // Excluir usuário para admin
+                    break;
+                case 11:
+                    adminListAnuncios();  // Listar anúncios para admin
+                    break;
+                case 12:
+                    adminDeleteAnuncio();  // Excluir anúncio para admin
+                    break;
+                case 13:
                     System.out.println("Saindo do menu...");
                     break;
                 default:
                     System.out.println("Opção inválida, tente novamente.");
             }
-        } while (option != 9);
+        } while (option != 13);
     }
 
     // Métodos de CRUD de Anúncio
@@ -285,5 +306,52 @@ public class ConsoleMenu {
 
         usuarioService.removerUsuario(id);
         System.out.println("Usuário excluído com sucesso!");
+    }
+
+    // Métodos de CRUD de Admin
+    private void adminListUsuarios() {
+        List<Usuario> usuarios = adminService.listarUsuarios();
+        if (usuarios.isEmpty()) {
+            System.out.println("Não há usuários.");
+        } else {
+            for (Usuario usuario : usuarios) {
+                System.out.println("ID: " + usuario.getId() + " | Nome: " + usuario.getNome() + " | Email: " + usuario.getEmail());
+            }
+        }
+    }
+
+    private void adminDeleteUsuario() {
+        System.out.print("Digite o ID do usuário para excluir: ");
+        Long id = scanner.nextLong();
+        scanner.nextLine();
+
+        if (adminService.excluirUsuario(id)) {
+            System.out.println("Usuário excluído com sucesso!");
+        } else {
+            System.out.println("Usuário não encontrado.");
+        }
+    }
+
+    private void adminListAnuncios() {
+        List<Anuncio> anuncios = adminService.listarAnuncios();
+        if (anuncios.isEmpty()) {
+            System.out.println("Não há anúncios.");
+        } else {
+            for (Anuncio anuncio : anuncios) {
+                System.out.println("ID: " + anuncio.getId() + " | Título: " + anuncio.getTitulo() + " | Preço: " + anuncio.getPreco());
+            }
+        }
+    }
+
+    private void adminDeleteAnuncio() {
+        System.out.print("Digite o ID do anúncio para excluir: ");
+        Long id = scanner.nextLong();
+        scanner.nextLine();
+
+        if (adminService.excluirAnuncio(id)) {
+            System.out.println("Anúncio excluído com sucesso!");
+        } else {
+            System.out.println("Anúncio não encontrado.");
+        }
     }
 }
