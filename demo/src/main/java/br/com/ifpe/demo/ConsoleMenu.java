@@ -1,7 +1,9 @@
 package br.com.ifpe.demo;
 
-import br.com.ifpe.demo.model.*;
-import br.com.ifpe.demo.service.*;
+import br.com.ifpe.demo.model.Anuncio;
+import br.com.ifpe.demo.model.Usuario;
+import br.com.ifpe.demo.service.AnuncioService;
+import br.com.ifpe.demo.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,13 +25,18 @@ public class ConsoleMenu {
         int option = 0;
 
         do {
-            System.out.println("\n=== Menu do CRUD de Veículos ===");
+            System.out.println("\n=== Menu do CRUD de Anúncios ===");
             System.out.println("1. Criar Anúncio");
             System.out.println("2. Listar Anúncios");
             System.out.println("3. Atualizar Anúncio");
             System.out.println("4. Deletar Anúncio");
+            System.out.println("\n=== Menu do CRUD de Usuario ===");
             System.out.println("5. Criar Usuário");
-            System.out.println("6. Sair");
+            System.out.println("6. Listar Usuários");
+            System.out.println("7. Atualizar Usuário");
+            System.out.println("8. Deletar Usuário");
+            System.out.println("============");
+            System.out.println("\n9. Sair");
             System.out.print("Escolha uma opção: ");
             option = scanner.nextInt();
             scanner.nextLine(); // Limpar o buffer
@@ -51,51 +58,51 @@ public class ConsoleMenu {
                     createUsuario();
                     break;
                 case 6:
+                    listUsuarios();
+                    break;
+                case 7:
+                    updateUsuario();
+                    break;
+                case 8:
+                    deleteUsuario();
+                    break;
+                case 9:
                     System.out.println("Saindo do menu...");
                     break;
                 default:
                     System.out.println("Opção inválida, tente novamente.");
             }
-        } while (option != 6);
+        } while (option != 9);
     }
 
+    // Métodos de CRUD de Anúncio
     private void createAnuncio() {
         System.out.println("\nCriando um novo anúncio:");
-
-        // Solicitar dados do veículo
         System.out.print("Digite o título do anúncio: ");
         String titulo = scanner.nextLine();
-
         System.out.print("Digite a descrição do anúncio: ");
         String descricao = scanner.nextLine();
-
         System.out.print("Digite o preço do veículo: ");
         double preco = scanner.nextDouble();
         scanner.nextLine(); // Limpar o buffer
-
         System.out.print("Digite a marca do veículo: ");
         String marca = scanner.nextLine();
-
         System.out.print("Digite o modelo do veículo: ");
         String modelo = scanner.nextLine();
-
         System.out.print("Digite o ano do veículo: ");
         int ano = scanner.nextInt();
         scanner.nextLine(); // Limpar o buffer
 
-        // Solicitar usuário (usando um ID fixo ou simulando a criação de um usuário)
         System.out.print("Digite o ID do usuário (1 para exemplo): ");
         Long usuarioId = scanner.nextLong();
         scanner.nextLine(); // Limpar o buffer
 
-        // Recuperar usuário
         Usuario usuario = usuarioService.buscarUsuarioPorId(usuarioId).orElse(null);
         if (usuario == null) {
             System.out.println("Usuário não encontrado.");
             return;
         }
 
-        // Criar anúncio
         Anuncio anuncio = new Anuncio();
         anuncio.setTitulo(titulo);
         anuncio.setDescricao(descricao);
@@ -111,7 +118,6 @@ public class ConsoleMenu {
 
     private void listAnuncios() {
         System.out.println("\nListando anúncios:");
-
         List<Anuncio> anuncios = anuncioService.listarAnuncios();
         if (anuncios.isEmpty()) {
             System.out.println("Não há anúncios disponíveis.");
@@ -124,6 +130,8 @@ public class ConsoleMenu {
                 System.out.println("Marca: " + anuncio.getMarca());
                 System.out.println("Modelo: " + anuncio.getModelo());
                 System.out.println("Ano: " + anuncio.getAno());
+                System.out.println("Criado por: " + anuncio.getUsuario().getNome());
+                System.out.println("===============");
             }
         }
     }
@@ -133,17 +141,13 @@ public class ConsoleMenu {
         Long id = scanner.nextLong();
         scanner.nextLine(); // Limpar o buffer
 
-        // Procurar o anúncio
         Anuncio anuncio = anuncioService.buscarAnuncioPorId(id).orElse(null);
-
         if (anuncio == null) {
             System.out.println("Anúncio não encontrado.");
             return;
         }
 
         System.out.println("Atualizando o anúncio de ID: " + id);
-
-        // Atualizar os campos
         System.out.print("Novo título (deixe em branco para manter o atual): ");
         String titulo = scanner.nextLine();
         if (!titulo.isEmpty()) {
@@ -190,21 +194,29 @@ public class ConsoleMenu {
         System.out.print("\nDigite o ID do anúncio que você deseja excluir: ");
         Long id = scanner.nextLong();
         scanner.nextLine(); // Limpar o buffer
-
-        // Remover o anúncio
-        anuncioService.removerAnuncio(id);
-        System.out.println("Anúncio excluído com sucesso!");
+    
+        try {
+            // Tentando remover o anúncio
+            boolean sucesso = anuncioService.removerAnuncio(id);
+    
+            if (sucesso) {
+                System.out.println("Anúncio excluído com sucesso!");
+            } else {
+                System.out.println("Anúncio não encontrado ou já excluído.");
+            }
+        } catch (Exception e) {
+            // Se houver erro na exclusão, exibe a mensagem
+            System.out.println("Erro ao excluir o anúncio: " + e.getMessage());
+        }
     }
 
+    // Métodos de CRUD de Usuário
     private void createUsuario() {
         System.out.println("\nCriando um novo usuário:");
-
         System.out.print("Digite o nome do usuário: ");
         String nome = scanner.nextLine();
-
         System.out.print("Digite o email do usuário: ");
         String email = scanner.nextLine();
-
         System.out.print("Digite a senha do usuário: ");
         String senha = scanner.nextLine();
 
@@ -215,5 +227,63 @@ public class ConsoleMenu {
 
         usuarioService.criarUsuario(usuario);
         System.out.println("Usuário criado com sucesso!");
+    }
+
+    private void listUsuarios() {
+        System.out.println("\nListando usuários:");
+        List<Usuario> usuarios = usuarioService.listarUsuarios();
+        if (usuarios.isEmpty()) {
+            System.out.println("Não há usuários cadastrados.");
+        } else {
+            for (Usuario usuario : usuarios) {
+                System.out.println("\nID: " + usuario.getId());
+                System.out.println("Nome: " + usuario.getNome());
+                System.out.println("Email: " + usuario.getEmail());
+                System.out.println("===============");
+            }
+        }
+    }
+
+    private void updateUsuario() {
+        System.out.print("\nDigite o ID do usuário que você deseja atualizar: ");
+        Long id = scanner.nextLong();
+        scanner.nextLine(); // Limpar o buffer
+
+        Usuario usuario = usuarioService.buscarUsuarioPorId(id).orElse(null);
+        if (usuario == null) {
+            System.out.println("Usuário não encontrado.");
+            return;
+        }
+
+        System.out.println("Atualizando o usuário de ID: " + id);
+        System.out.print("Novo nome (deixe em branco para manter o atual): ");
+        String nome = scanner.nextLine();
+        if (!nome.isEmpty()) {
+            usuario.setNome(nome);
+        }
+
+        System.out.print("Novo email (deixe em branco para manter o atual): ");
+        String email = scanner.nextLine();
+        if (!email.isEmpty()) {
+            usuario.setEmail(email);
+        }
+
+        System.out.print("Nova senha (deixe em branco para manter a atual): ");
+        String senha = scanner.nextLine();
+        if (!senha.isEmpty()) {
+            usuario.setSenha(senha);
+        }
+
+        usuarioService.atualizarUsuario(id, usuario);
+        System.out.println("Usuário atualizado com sucesso!");
+    }
+
+    private void deleteUsuario() {
+        System.out.print("\nDigite o ID do usuário que você deseja excluir: ");
+        Long id = scanner.nextLong();
+        scanner.nextLine(); // Limpar o buffer
+
+        usuarioService.removerUsuario(id);
+        System.out.println("Usuário excluído com sucesso!");
     }
 }

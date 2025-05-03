@@ -39,8 +39,13 @@ public class AnuncioService {
     }
 
     // Remover um anúncio
-    public void removerAnuncio(Long id) {
-        anuncioRepository.deleteById(id);
+    public boolean removerAnuncio(Long id) {
+        Anuncio anuncio = anuncioRepository.findById(id).orElse(null);
+        if (anuncio != null) {
+            anuncioRepository.delete(anuncio);  // Exclui o anúncio
+            return true;  // Anúncio excluído com sucesso
+        }
+        return false;  // Anúncio não encontrado
     }
 
     // Buscar um anúncio pelo id

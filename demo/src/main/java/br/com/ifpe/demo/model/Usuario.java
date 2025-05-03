@@ -16,4 +16,7 @@ public class Usuario {
     @Column(unique = true)
     private String email;
     private String senha;
+    
+    @Column(nullable = true) // Permite valor NULL
+    private String dtype;
 }
