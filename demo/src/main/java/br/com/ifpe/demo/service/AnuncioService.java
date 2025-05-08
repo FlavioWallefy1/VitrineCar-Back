@@ -52,4 +52,9 @@ public class AnuncioService {
     public Optional<Anuncio> buscarAnuncioPorId(Long id) {
         return anuncioRepository.findById(id);
     }
+
+    public List<Anuncio> buscarPorTermo(String termo) {
+        return anuncioRepository.findByTituloContainingIgnoreCaseOrDescricaoContainingIgnoreCase(termo, termo);
+    }
+    
 }

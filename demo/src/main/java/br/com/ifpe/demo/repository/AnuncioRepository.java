@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
     List<Anuncio> findByUsuarioId(Long usuarioId);
+    List<Anuncio> findByTituloContainingIgnoreCaseOrDescricaoContainingIgnoreCase(String titulo, String descricao);
 }

@@ -1,5 +1,8 @@
 package br.com.ifpe.demo;
 
+//mvn spring-boot:run
+//mvn clean install 
+
 import br.com.ifpe.demo.ConsoleMenu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

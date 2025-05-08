@@ -4,6 +4,8 @@ import br.com.ifpe.demo.model.Anuncio;
 import br.com.ifpe.demo.model.Usuario;
 import br.com.ifpe.demo.repository.AnuncioRepository;
 import br.com.ifpe.demo.repository.UsuarioRepository;
+import br.com.ifpe.demo.service.AnuncioService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,9 @@ public class AnuncioController {
 
     @Autowired
     private AnuncioRepository anuncioRepository;
+
+    @Autowired
+    private AnuncioService anuncioService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -46,4 +51,14 @@ public class AnuncioController {
     public void deletarAnuncio(@PathVariable Long id) {
         anuncioRepository.deleteById(id);
     }
+
+    // @GetMapping
+    // public List<Anuncio> listarAnuncio(@RequestParam(required = false) String termo) {
+    //     if (termo != null && !termo.isEmpty()) {
+    //         return anuncioService.buscarPorTermo(termo);  // Busca por título ou descrição
+    //     }
+    //     return anuncioService.listarAnuncios();  // Retorna todos os anúncios
+    // }
+
+
 }
