@@ -3,6 +3,8 @@ package br.com.ifpe.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,10 +44,22 @@ public class AnuncioController {
     }
 
     @PostMapping("/usuario/{usuarioId}")
-    public Anuncio criarAnuncio(@PathVariable Long usuarioId, @RequestBody Anuncio anuncio) {
-        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
-        anuncio.setUsuario(usuario);
-        return anuncioRepository.save(anuncio);
+    public ResponseEntity<Anuncio> criarAnuncio(@PathVariable Long usuarioId, @RequestBody Anuncio anuncio) {
+        try {
+            // Verifica se o usuário existe
+            Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+            // Vincula o usuário ao anúncio
+            anuncio.setUsuario(usuario);
+
+            // Salva o anúncio
+            Anuncio novoAnuncio = anuncioRepository.save(anuncio);
+
+            return new ResponseEntity<>(novoAnuncio, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/{id}")

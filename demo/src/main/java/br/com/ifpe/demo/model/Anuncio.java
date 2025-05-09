@@ -17,7 +17,10 @@ public class Anuncio {
     private double preco;
     private String marca;
     private String modelo;
+    private int anoModelo;
+    private int anoFabricacao;
     private int ano;
+    private String favorito;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")

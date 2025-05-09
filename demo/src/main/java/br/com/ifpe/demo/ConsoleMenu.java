@@ -130,7 +130,7 @@ public class ConsoleMenu {
         anuncio.setPreco(preco);
         anuncio.setMarca(marca);
         anuncio.setModelo(modelo);
-        anuncio.setAno(ano);
+        //anuncio.setAno(ano);
         anuncio.setUsuario(usuario);
 
         anuncioService.criarAnuncio(anuncio);
@@ -150,7 +150,7 @@ public class ConsoleMenu {
                 System.out.println("Preço: " + anuncio.getPreco());
                 System.out.println("Marca: " + anuncio.getMarca());
                 System.out.println("Modelo: " + anuncio.getModelo());
-                System.out.println("Ano: " + anuncio.getAno());
+                //System.out.println("Ano: " + anuncio.getAno());
                 System.out.println("Criado por: " + anuncio.getUsuario().getNome());
                 System.out.println("===============");
             }
@@ -204,7 +204,7 @@ public class ConsoleMenu {
         int ano = scanner.nextInt();
         scanner.nextLine(); // Limpar o buffer
         if (ano > 0) {
-            anuncio.setAno(ano);
+           // anuncio.setAno(ano);
         }
 
         anuncioService.atualizarAnuncio(id, anuncio);
