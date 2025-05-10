@@ -24,6 +24,11 @@ public class UsuarioController {
         return usuarioRepository.save(usuario);
     }
 
+     @GetMapping("/{id}")
+    public Usuario buscarUsuarioPorId(@PathVariable Long id) {
+        return usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
+
     @PutMapping("/{id}")
     public Usuario atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioAtualizado) {
         usuarioAtualizado.setId(id);
