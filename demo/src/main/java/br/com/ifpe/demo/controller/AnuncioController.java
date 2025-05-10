@@ -68,6 +68,12 @@ public class AnuncioController {
         return anuncioRepository.save(anuncioAtualizado);
     }
 
+    @GetMapping("/{id}")
+    public Anuncio buscarAnuncioPorId(@PathVariable Long id) {
+        return anuncioRepository.findById(id).orElseThrow(() -> new RuntimeException("Anúncio não encontrado"));
+    }
+
+
     @DeleteMapping("/{id}")
     public void deletarAnuncio(@PathVariable Long id) {
         anuncioRepository.deleteById(id);
@@ -82,8 +88,8 @@ public class AnuncioController {
         anuncioExistente.setMarca(anuncio.getMarca());
         anuncioExistente.setModelo(anuncio.getModelo());
         anuncioExistente.setPreco(anuncio.getPreco());
-        //anuncioExistente.setAnoFabricacao(anuncio.getAnoFabricacao());
-        //anuncioExistente.setAnoModelo(anuncio.getAnoModelo());
+        anuncioExistente.setAnoFabricacao(anuncio.getAnoFabricacao());
+        anuncioExistente.setAnoModelo(anuncio.getAnoModelo());
         anuncioExistente.setDescricao(anuncio.getDescricao());
         //anuncioExistente.setImagens(anuncio.getImagens());
         
