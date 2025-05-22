@@ -24,7 +24,8 @@ public class SecurityConfig {
         .and()
         .csrf().disable()
         .authorizeHttpRequests(auth -> auth
-			.requestMatchers("/", "/login", "/usuarios/cadastrar", "/anuncios","/public/**").permitAll()
+			.requestMatchers("/", "/login", "/anuncios","/public/**").permitAll()
+			.requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
             .requestMatchers(HttpMethod.OPTIONS,  "/**").permitAll() // libera preflight
             .anyRequest().authenticated()
         )
