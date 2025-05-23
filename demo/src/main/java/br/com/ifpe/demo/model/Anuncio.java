@@ -22,6 +22,7 @@ public class Anuncio {
     private int anoModelo;
     private int anoFabricacao;
     private int ano;
+    private int km;
     private String cor;
     private String categoria;
     private String cambio;
