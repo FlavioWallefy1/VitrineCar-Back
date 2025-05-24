@@ -5,6 +5,7 @@ import br.com.ifpe.demo.repository.AnuncioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,22 +15,18 @@ public class AnuncioService {
     @Autowired
     private AnuncioRepository anuncioRepository;
 
-    // Criar novo anúncio
     public Anuncio criarAnuncio(Anuncio anuncio) {
         return anuncioRepository.save(anuncio);
     }
 
-    // Listar todos os anúncios
     public List<Anuncio> listarAnuncios() {
         return anuncioRepository.findAll();
     }
 
-    // Listar anúncios de um usuário específico
     public List<Anuncio> listarAnunciosPorUsuario(Long usuarioId) {
         return anuncioRepository.findByUsuarioId(usuarioId);
     }
 
-    // Atualizar um anúncio
     public Anuncio atualizarAnuncio(Long id, Anuncio anuncioAtualizado) {
         if (anuncioRepository.existsById(id)) {
             anuncioAtualizado.setId(id);
@@ -38,17 +35,15 @@ public class AnuncioService {
         return null;
     }
 
-    // Remover um anúncio
     public boolean removerAnuncio(Long id) {
         Anuncio anuncio = anuncioRepository.findById(id).orElse(null);
         if (anuncio != null) {
-            anuncioRepository.delete(anuncio);  // Exclui o anúncio
-            return true;  // Anúncio excluído com sucesso
+            anuncioRepository.delete(anuncio);
+            return true;
         }
-        return false;  // Anúncio não encontrado
+        return false;
     }
 
-    // Buscar um anúncio pelo id
     public Optional<Anuncio> buscarAnuncioPorId(Long id) {
         return anuncioRepository.findById(id);
     }
@@ -56,5 +51,8 @@ public class AnuncioService {
     public List<Anuncio> buscarPorTermo(String termo) {
         return anuncioRepository.findByTituloContainingIgnoreCaseOrDescricaoContainingIgnoreCase(termo, termo);
     }
-    
+
+    public long contarAnunciosRecentes(Long usuarioId, LocalDateTime dataLimite) {
+        return anuncioRepository.countByUsuarioIdAndDataCriacaoAfter(usuarioId, dataLimite);
+    }
 }
