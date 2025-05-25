@@ -24,7 +24,7 @@ public class UsuarioController {
         return usuarioRepository.save(usuario);
     }
 
-     @GetMapping("/{id}")
+    @GetMapping("/{id}")
     public Usuario buscarUsuarioPorId(@PathVariable Long id) {
         return usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
@@ -38,5 +38,11 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public void deletarUsuario(@PathVariable Long id) {
         usuarioRepository.deleteById(id);
+    }
+
+    // Novo endpoint para busca de usuários pelo nome (query param ?nome=)
+    @GetMapping("/search")
+    public List<Usuario> buscarUsuariosPorNome(@RequestParam String nome) {
+        return usuarioRepository.findByNomeContainingIgnoreCase(nome);
     }
 }
