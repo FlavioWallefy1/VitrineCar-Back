@@ -55,4 +55,9 @@ public class AnuncioService {
     public long contarAnunciosRecentes(Long usuarioId, LocalDateTime dataLimite) {
         return anuncioRepository.countByUsuarioIdAndDataCriacaoAfter(usuarioId, dataLimite);
     }
+
+    public List<Anuncio> buscarCincoAnunciosMaisRecentes(Long usuarioId) {
+    return anuncioRepository.findTop5ByUsuarioIdOrderByDataCriacaoDesc(usuarioId);
+}
+
 }

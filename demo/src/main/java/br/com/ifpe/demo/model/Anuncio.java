@@ -39,6 +39,7 @@ public class Anuncio {
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
     @PrePersist

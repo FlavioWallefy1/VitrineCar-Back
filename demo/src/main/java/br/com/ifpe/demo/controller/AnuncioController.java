@@ -1,5 +1,6 @@
 package br.com.ifpe.demo.controller;
 
+import java.util.Collections; // no topo do arquivo
 import br.com.ifpe.demo.model.Anuncio;
 import br.com.ifpe.demo.model.Usuario;
 import br.com.ifpe.demo.repository.AnuncioRepository;
@@ -45,30 +46,49 @@ public class AnuncioController {
         return anuncioService.contarAnunciosRecentes(usuarioId, dataLimite);
     }
 
-    @PostMapping("/usuario/{usuarioId}")
-    public ResponseEntity<?> criarAnuncio(@PathVariable Long usuarioId, @RequestBody Anuncio anuncio) {
-        try {
-            Usuario usuario = usuarioRepository.findById(usuarioId)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-            LocalDateTime dataLimite = LocalDateTime.now().minusDays(PERIODO_DIAS);
-            long quantidadeAnuncios = anuncioService.contarAnunciosRecentes(usuarioId, dataLimite);
-
-            if (quantidadeAnuncios >= LIMITE_ANUNCIOS) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Limite de 5 anúncios em 30 dias atingido. Aguarde para criar novos.");
-            }
-
-            anuncio.setUsuario(usuario);
-            Anuncio novoAnuncio = anuncioRepository.save(anuncio);
-            return new ResponseEntity<>(novoAnuncio, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("Limite de 5 anúncios")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-            }
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @GetMapping("/usuario/{usuarioId}/recentes")
+    public List<Anuncio> listarCincoAnunciosMaisRecentes(@PathVariable Long usuarioId) {
+        return anuncioService.buscarCincoAnunciosMaisRecentes(usuarioId);
     }
+
+   @PostMapping("/usuario/{usuarioId}")
+public ResponseEntity<?> criarAnuncio(@PathVariable Long usuarioId, @RequestBody Anuncio anuncio) {
+    try {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        List<Anuncio> ultimosCinco = anuncioRepository.findTop5ByUsuarioIdOrderByDataCriacaoDesc(usuarioId);
+
+        if (ultimosCinco.size() >= LIMITE_ANUNCIOS) {
+            LocalDateTime maisAntigo = ultimosCinco.stream()
+                    .map(Anuncio::getDataCriacao)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(LocalDateTime.now());
+
+            LocalDateTime limiteParaNovoAnuncio = maisAntigo.plusDays(PERIODO_DIAS);
+
+            if (LocalDateTime.now().isBefore(limiteParaNovoAnuncio)) {
+                long diasRestantes = java.time.Duration.between(LocalDateTime.now(), limiteParaNovoAnuncio).toDays() + 1;
+                String msg = "Limite de 5 anúncios em 30 dias atingido. Aguarde " + diasRestantes + " dia(s) para criar novos.";
+
+                // Retorna JSON com campo message
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Collections.singletonMap("message", msg));
+            }
+        }
+
+        anuncio.setUsuario(usuario);
+        Anuncio novoAnuncio = anuncioRepository.save(anuncio);
+        return new ResponseEntity<>(novoAnuncio, HttpStatus.CREATED);
+
+    } catch (RuntimeException e) {
+        if (e.getMessage().contains("Limite de 5 anúncios")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        }
+        return new ResponseEntity<>(Collections.singletonMap("message", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
 
     @PutMapping("/{id}")
     public Anuncio atualizarAnuncio(@PathVariable Long id, @RequestBody Anuncio anuncioAtualizado) {

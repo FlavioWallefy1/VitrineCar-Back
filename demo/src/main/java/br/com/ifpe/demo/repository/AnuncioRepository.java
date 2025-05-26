@@ -10,6 +10,8 @@ public interface AnuncioRepository extends JpaRepository<Anuncio, Long> {
     List<Anuncio> findByUsuarioId(Long usuarioId);
 
     List<Anuncio> findByTituloContainingIgnoreCaseOrDescricaoContainingIgnoreCase(String titulo, String descricao);
+    List<Anuncio> findTop5ByUsuarioIdOrderByDataCriacaoDesc(Long usuarioId);
+
 
     long countByUsuarioIdAndDataCriacaoAfter(Long usuarioId, LocalDateTime dataCriacao);
 }
