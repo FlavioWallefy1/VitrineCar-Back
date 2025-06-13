@@ -10,9 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.Duration;
+import java.util.Objects;
+
 
 @RestController
 @RequestMapping("/anuncios")
@@ -51,7 +55,7 @@ public class AnuncioController {
         return anuncioService.buscarCincoAnunciosMaisRecentes(usuarioId);
     }
 
-   @PostMapping("/usuario/{usuarioId}")
+@PostMapping("/usuario/{usuarioId}")
 public ResponseEntity<?> criarAnuncio(@PathVariable Long usuarioId, @RequestBody Anuncio anuncio) {
     try {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -62,33 +66,34 @@ public ResponseEntity<?> criarAnuncio(@PathVariable Long usuarioId, @RequestBody
         if (ultimosCinco.size() >= LIMITE_ANUNCIOS) {
             LocalDateTime maisAntigo = ultimosCinco.stream()
                     .map(Anuncio::getDataCriacao)
+                    .filter(Objects::nonNull)  // segurança
                     .min(LocalDateTime::compareTo)
                     .orElse(LocalDateTime.now());
 
             LocalDateTime limiteParaNovoAnuncio = maisAntigo.plusDays(PERIODO_DIAS);
 
             if (LocalDateTime.now().isBefore(limiteParaNovoAnuncio)) {
-                long diasRestantes = java.time.Duration.between(LocalDateTime.now(), limiteParaNovoAnuncio).toDays() + 1;
+                long diasRestantes = Duration.between(LocalDateTime.now(), limiteParaNovoAnuncio).toDays() + 1;
                 String msg = "Limite de 5 anúncios em 30 dias atingido. Aguarde " + diasRestantes + " dia(s) para criar novos.";
-
-                // Retorna JSON com campo message
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Collections.singletonMap("message", msg));
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.singletonMap("message", msg));
             }
         }
 
         anuncio.setUsuario(usuario);
         Anuncio novoAnuncio = anuncioRepository.save(anuncio);
-        return new ResponseEntity<>(novoAnuncio, HttpStatus.CREATED);
 
-    } catch (RuntimeException e) {
-        if (e.getMessage().contains("Limite de 5 anúncios")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Collections.singletonMap("message", e.getMessage()));
-        }
-        return new ResponseEntity<>(Collections.singletonMap("message", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novoAnuncio);
+
+    } catch (Exception e) {
+        // LOG VISÍVEL NO BACKEND
+        e.printStackTrace();  // ou use log.error("Erro ao criar anúncio", e);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Collections.singletonMap("message", "Erro ao criar anúncio: " + e.getMessage()));
     }
 }
+
+
 
     @PutMapping("/{id}")
     public Anuncio atualizarAnuncio(@PathVariable Long id, @RequestBody Anuncio anuncioAtualizado) {
