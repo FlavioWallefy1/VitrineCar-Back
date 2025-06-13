@@ -5,66 +5,71 @@ import br.com.ifpe.demo.model.Usuario;
 import br.com.ifpe.demo.repository.AnuncioRepository;
 import br.com.ifpe.demo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
 import java.util.List;
 
 @Service
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
+
     @Autowired
     private AnuncioRepository anuncioRepository;
 
-    // Criar um novo usuário
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
+        
+        System.out.println(">>> Usuário encontrado: " + usuario.getEmail());
+        System.out.println(">>> Senha no banco: " + usuario.getSenha());
+
+        return usuario;
+    }
     public Usuario criarUsuario(Usuario usuario) {
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         return usuarioRepository.save(usuario);
     }
 
-    // Buscar usuário por ID
     public Optional<Usuario> buscarUsuarioPorId(Long id) {
         return usuarioRepository.findById(id);
     }
 
-    // Buscar usuário por email
     public Usuario buscarUsuarioPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
+        return usuarioRepository.findByEmail(email).orElse(null);
     }
 
-     // Listar todos os usuários
-     public List<Usuario> listarUsuarios() {
+    public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();
     }
 
-    // Atualizar usuário
     public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado) {
         if (usuarioRepository.existsById(id)) {
             usuarioAtualizado.setId(id);
+            usuarioAtualizado.setSenha(passwordEncoder.encode(usuarioAtualizado.getSenha()));
             return usuarioRepository.save(usuarioAtualizado);
         }
         return null;
     }
 
-    // Remover um usuário
     public void removerUsuario(Long id) {
-        // Verificar se o usuário existe
         Usuario usuario = usuarioRepository.findById(id).orElse(null);
         if (usuario != null) {
-            // Primeiro, excluir os anúncios associados ao usuário
             List<Anuncio> anuncios = anuncioRepository.findByUsuarioId(id);
             if (!anuncios.isEmpty()) {
-                System.out.println("Excluindo " + anuncios.size() + " anúncios relacionados a este usuário...");
-                anuncioRepository.deleteAll(anuncios);  // Excluindo os anúncios
+                anuncioRepository.deleteAll(anuncios);
             }
-            // Agora, excluir o usuário
             usuarioRepository.delete(usuario);
-            System.out.println("Usuário excluído com sucesso!");
-        } else {
-            System.out.println("Usuário não encontrado.");
         }
     }
 }

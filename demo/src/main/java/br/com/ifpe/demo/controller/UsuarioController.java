@@ -1,7 +1,7 @@
 package br.com.ifpe.demo.controller;
 
 import br.com.ifpe.demo.model.Usuario;
-import br.com.ifpe.demo.repository.UsuarioRepository;
+import br.com.ifpe.demo.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,31 +12,31 @@ import java.util.List;
 public class UsuarioController {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
 
     @GetMapping
     public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findAll();
+        return usuarioService.listarUsuarios();
     }
 
     @PostMapping
     public Usuario criarUsuario(@RequestBody Usuario usuario) {
-        return usuarioRepository.save(usuario);
+        return usuarioService.criarUsuario(usuario);
     }
 
-     @GetMapping("/{id}")
+    @GetMapping("/{id}")
     public Usuario buscarUsuarioPorId(@PathVariable Long id) {
-        return usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        return usuarioService.buscarUsuarioPorId(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
 
     @PutMapping("/{id}")
     public Usuario atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioAtualizado) {
-        usuarioAtualizado.setId(id);
-        return usuarioRepository.save(usuarioAtualizado);
+        return usuarioService.atualizarUsuario(id, usuarioAtualizado);
     }
 
     @DeleteMapping("/{id}")
     public void deletarUsuario(@PathVariable Long id) {
-        usuarioRepository.deleteById(id);
+        usuarioService.removerUsuario(id);
     }
 }
