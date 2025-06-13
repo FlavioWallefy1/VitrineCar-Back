@@ -26,7 +26,6 @@ public class Usuario implements UserDetails {
     @Column(nullable = true)
     private String dtype;
 
-<<<<<<< HEAD
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList(); // Adicione roles aqui se desejar
@@ -60,10 +59,5 @@ public class Usuario implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-=======
-    public Usuario orElseThrow(Object object) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
->>>>>>> main
     }
 }
