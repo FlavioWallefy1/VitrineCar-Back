@@ -50,4 +50,10 @@ public class UsuarioController {
     public void deletarUsuario(@PathVariable Long id) {
         usuarioService.removerUsuario(id);
     }
+
+    // Novo endpoint para busca de usuários pelo nome (query param ?nome=)
+    @GetMapping("/search")
+    public List<Usuario> buscarUsuariosPorNome(@RequestParam String nome) {
+        return usuarioRepository.findByNomeContainingIgnoreCase(nome);
+    }
 }

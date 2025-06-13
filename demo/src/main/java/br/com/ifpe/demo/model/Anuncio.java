@@ -2,6 +2,8 @@ package br.com.ifpe.demo.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -12,6 +14,7 @@ public class Anuncio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String tipoVeiculo;
     private String titulo;
     private String descricao;
     private double preco;
@@ -20,9 +23,27 @@ public class Anuncio {
     private int anoModelo;
     private int anoFabricacao;
     private int ano;
-    private String favorito;
+    private int km;
+    private String cor;
+    private String categoria;
+    private String cambio;
+    private String combustivel;
+
+    @ElementCollection
+    private List<String> opcionais;
+
+    @ElementCollection
+    private List<String> imagens;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dataCriacao = LocalDateTime.now();
+    }
 }

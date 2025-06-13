@@ -1,24 +1,18 @@
 package br.com.ifpe.demo.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import java.util.Collections; // no topo do arquivo
 import br.com.ifpe.demo.model.Anuncio;
 import br.com.ifpe.demo.model.Usuario;
 import br.com.ifpe.demo.repository.AnuncioRepository;
 import br.com.ifpe.demo.repository.UsuarioRepository;
+import br.com.ifpe.demo.service.AnuncioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/anuncios")
@@ -30,6 +24,12 @@ public class AnuncioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private AnuncioService anuncioService;
+
+    private static final int LIMITE_ANUNCIOS = 5;
+    private static final int PERIODO_DIAS = 30;
+
     @GetMapping
     public List<Anuncio> listarAnuncios() {
         return anuncioRepository.findAll();
@@ -40,24 +40,55 @@ public class AnuncioController {
         return anuncioRepository.findByUsuarioId(usuarioId);
     }
 
-    @PostMapping("/usuario/{usuarioId}")
-    public ResponseEntity<Anuncio> criarAnuncio(@PathVariable Long usuarioId, @RequestBody Anuncio anuncio) {
-        try {
-            // Verifica se o usuário existe
-            Usuario usuario = usuarioRepository.findById(usuarioId)
+    @GetMapping("/usuario/{usuarioId}/count")
+    public long contarAnunciosRecentes(@PathVariable Long usuarioId) {
+        LocalDateTime dataLimite = LocalDateTime.now().minusDays(PERIODO_DIAS);
+        return anuncioService.contarAnunciosRecentes(usuarioId, dataLimite);
+    }
+
+    @GetMapping("/usuario/{usuarioId}/recentes")
+    public List<Anuncio> listarCincoAnunciosMaisRecentes(@PathVariable Long usuarioId) {
+        return anuncioService.buscarCincoAnunciosMaisRecentes(usuarioId);
+    }
+
+   @PostMapping("/usuario/{usuarioId}")
+public ResponseEntity<?> criarAnuncio(@PathVariable Long usuarioId, @RequestBody Anuncio anuncio) {
+    try {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            // Vincula o usuário ao anúncio
-            anuncio.setUsuario(usuario);
+        List<Anuncio> ultimosCinco = anuncioRepository.findTop5ByUsuarioIdOrderByDataCriacaoDesc(usuarioId);
 
-            // Salva o anúncio
-            Anuncio novoAnuncio = anuncioRepository.save(anuncio);
+        if (ultimosCinco.size() >= LIMITE_ANUNCIOS) {
+            LocalDateTime maisAntigo = ultimosCinco.stream()
+                    .map(Anuncio::getDataCriacao)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(LocalDateTime.now());
 
-            return new ResponseEntity<>(novoAnuncio, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            LocalDateTime limiteParaNovoAnuncio = maisAntigo.plusDays(PERIODO_DIAS);
+
+            if (LocalDateTime.now().isBefore(limiteParaNovoAnuncio)) {
+                long diasRestantes = java.time.Duration.between(LocalDateTime.now(), limiteParaNovoAnuncio).toDays() + 1;
+                String msg = "Limite de 5 anúncios em 30 dias atingido. Aguarde " + diasRestantes + " dia(s) para criar novos.";
+
+                // Retorna JSON com campo message
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Collections.singletonMap("message", msg));
+            }
         }
+
+        anuncio.setUsuario(usuario);
+        Anuncio novoAnuncio = anuncioRepository.save(anuncio);
+        return new ResponseEntity<>(novoAnuncio, HttpStatus.CREATED);
+
+    } catch (RuntimeException e) {
+        if (e.getMessage().contains("Limite de 5 anúncios")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        }
+        return new ResponseEntity<>(Collections.singletonMap("message", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+}
 
     @PutMapping("/{id}")
     public Anuncio atualizarAnuncio(@PathVariable Long id, @RequestBody Anuncio anuncioAtualizado) {
@@ -70,11 +101,8 @@ public class AnuncioController {
         return anuncioRepository.findById(id).orElseThrow(() -> new RuntimeException("Anúncio não encontrado"));
     }
 
-
     @DeleteMapping("/{id}")
     public void deletarAnuncio(@PathVariable Long id) {
         anuncioRepository.deleteById(id);
     }
-
-
 }
