@@ -22,15 +22,16 @@ public class SecurityConfig {
 
     // NÃO injete o UsuarioService aqui diretamente
 
-     @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
         http
             .cors().and()
             .csrf().disable()
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/public/**", "/anuncios").permitAll()
-                 .requestMatchers(HttpMethod.GET, "/anuncios/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/anuncios/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
+                .requestMatchers(HttpMethod.GET, "/usuarios").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated()
             )
             .userDetailsService(userDetailsService)
@@ -38,6 +39,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
