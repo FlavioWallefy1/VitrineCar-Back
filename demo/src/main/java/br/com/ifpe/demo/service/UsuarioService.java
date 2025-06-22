@@ -39,7 +39,6 @@ public class UsuarioService implements UserDetailsService {
     
     public Usuario criarUsuario(Usuario usuario) {
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-        usuario.setRole("USER");
         return usuarioRepository.save(usuario);
     }
 
