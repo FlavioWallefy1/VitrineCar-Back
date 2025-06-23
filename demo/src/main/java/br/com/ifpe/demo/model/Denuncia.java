@@ -1,5 +1,7 @@
 package br.com.ifpe.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,5 +24,6 @@ public class Denuncia {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "anuncio_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Anuncio anuncio;
 }
