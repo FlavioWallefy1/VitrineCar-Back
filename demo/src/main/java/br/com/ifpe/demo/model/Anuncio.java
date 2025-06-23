@@ -16,6 +16,7 @@ public class Anuncio {
 
     private String tipoVeiculo;
     private String titulo;
+    @Column(length = 1000)
     private String descricao;
     private double preco;
     private String marca;
