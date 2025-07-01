@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .requestMatchers("/login", "/public/**", "/anuncios").permitAll()
                 .requestMatchers(HttpMethod.GET, "/anuncios/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
-                .requestMatchers(HttpMethod.GET, "/usuarios").hasAuthority("ROLE_ADMIN")
+                .requestMatchers(HttpMethod.GET, "/usuarios", "/denuncias").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated()
             )
             .userDetailsService(userDetailsService)
